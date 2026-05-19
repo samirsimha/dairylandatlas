@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wisconsin's Largest Employers by County</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Josefin+Sans:wght@300;400;600&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#8B2500; --rust:#A0390A; --gold:#C4943A; --sand:#C8A96E;
+  --cream:#F5EDD6; --warm:#D9C9A8; --bark:#2E1F0F; --moss:#3D4D32;
+  --sage:#6B7C5A; --lsage:#A8BF96;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Josefin Sans',sans-serif;background:var(--bark);}
+#app{width:100%;height:100%;display:grid;grid-template-rows:auto 1fr auto;grid-template-columns:auto 1fr;background:var(--warm);}
+
+@media(max-width:640px){
+  html,body{overflow-y:auto;height:auto;min-height:100%;}
+  #app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;height:auto;min-height:100%;}
+  #hdr{grid-column:1;grid-row:1;}
+  #side{grid-column:1;grid-row:2;width:100% !important;flex-direction:row;flex-wrap:wrap;padding:10px 14px;gap:0;border-right:none;}
+  .sstripe{display:none;}
+  .ss{flex:1;min-width:130px;padding:8px 6px;}
+  .sbot{margin-top:0;}
+  #map{grid-column:1;grid-row:3;height:68vw;min-height:260px;}
+  #ftr{grid-column:1;grid-row:4;}
+  .hr{display:none;}
+  #hdr h1{font-size:15px;}
+  .hs{font-size:11px;}
+  #pop{min-width:220px;max-width:92vw;}
+}
+
+/* HEADER — spans full width */
+#hdr{
+  grid-column:1/-1; grid-row:1;
+  height:58px; background:var(--bark);
+  display:flex; align-items:center; padding:0 22px; gap:13px;
+  position:relative; z-index:20;
+}
+.hstripe{
+  position:absolute;bottom:-11px;left:0;right:0;height:11px;
+  background:repeating-linear-gradient(90deg,
+    var(--red) 0,var(--red) 20px, var(--gold) 20px,var(--gold) 33px,
+    var(--rust) 33px,var(--rust) 44px, var(--gold) 44px,var(--gold) 55px);
+}
+.flw{display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+.flw i{display:block;background:var(--gold);height:3.5px;font-style:normal;}
+.flw i:nth-child(1){width:24px;} .flw i:nth-child(2){width:16px;}
+.flw i:nth-child(3){width:24px;} .flw i:nth-child(4){width:10px;}
+.flw i:nth-child(5){width:19px;}
+#hdr h1{font-family:'Josefin Sans',sans-serif;font-size:19px;font-weight:600;color:var(--cream);letter-spacing:.38em;text-transform:uppercase;}
+.hd{width:1px;height:26px;background:rgba(200,169,110,.25);}
+.hs{font-family:'Crimson Text',serif;font-size:13px;font-style:italic;color:var(--sand);}
+.hr{margin-left:auto;text-align:right;}
+.hr p{font-size:7px;letter-spacing:.21em;color:var(--sand);opacity:.65;text-transform:uppercase;line-height:1.9;}
+
+/* SIDEBAR */
+#side{
+  grid-column:1; grid-row:2;
+  width:162px; background:var(--bark);
+  padding:18px 13px; display:flex; flex-direction:column; gap:14px;
+  position:relative; z-index:10;
+}
+.sstripe{
+  position:absolute;top:0;right:-9px;bottom:0;width:9px;
+  background:repeating-linear-gradient(180deg,
+    var(--red) 0,var(--red) 15px, var(--rust) 15px,var(--rust) 24px,
+    var(--gold) 24px,var(--gold) 29px, var(--rust) 29px,var(--rust) 38px);
+}
+.ss h4{font-size:7px;letter-spacing:.28em;color:var(--sand);text-transform:uppercase;padding-bottom:5px;margin-bottom:7px;border-bottom:1px solid var(--rust);}
+.lr{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.lsw{width:17px;height:10px;border:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.ll{font-size:7.5px;color:var(--lsage);letter-spacing:.04em;}
+.ind{font-size:7.5px;color:var(--lsage);margin-bottom:5px;letter-spacing:.03em;display:flex;align-items:center;gap:5px;}
+.irank{font-family:'Playfair Display',serif;font-size:8px;color:var(--gold);opacity:.8;min-width:10px;}
+.sbot{margin-top:auto;text-align:center;}
+.sbig{font-family:'Playfair Display',serif;font-size:18px;color:var(--sand);display:block;line-height:1;margin:4px auto 4px;text-align:center;}
+.sbot p{font-size:7.5px;color:var(--lsage);letter-spacing:.05em;line-height:1.8;text-align:center;}
+
+/* MAP */
+#map{
+  grid-column:2; grid-row:2;
+  position:relative; overflow:hidden; background:var(--warm);
+  background-image:
+    /* Fine crosshatch — editorial/fashion grid */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 38px,
+      rgba(139,75,20,0.055) 38px,
+      rgba(139,75,20,0.055) 39px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 38px,
+      rgba(139,75,20,0.055) 38px,
+      rgba(139,75,20,0.055) 39px
+    ),
+    /* FLW diagonal stripe accent — prairie weave */
+    repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 18px,
+      rgba(196,148,58,0.04) 18px,
+      rgba(196,148,58,0.04) 19px
+    ),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 18px,
+      rgba(61,77,50,0.035) 18px,
+      rgba(61,77,50,0.035) 19px
+    );
+}
+#wi-svg{width:100%;height:100%;display:block;}
+
+.cty{cursor:pointer;transition:filter .13s ease;}
+.cty:hover,.cty.hi{filter:brightness(1.22) drop-shadow(0 1px 9px rgba(139,37,0,.55));}
+.cty.hi{stroke:var(--red) !important;stroke-width:1.5 !important;}
+
+/* Labels rendered as SVG text — sized per county, centered on bbox center */
+.clbl{
+  pointer-events:none;
+  font-family:'Josefin Sans',sans-serif;
+  font-weight:600;
+  letter-spacing:.04em;
+  dominant-baseline:middle;
+  text-anchor:middle;
+  text-transform:uppercase;
+}
+
+/* FOOTER */
+#ftr{
+  grid-column:1/-1; grid-row:3;
+  height:30px; background:var(--moss);
+  display:flex; align-items:center; padding:0 22px;
+  position:relative; z-index:20;
+}
+.fstripe{position:absolute;top:-7px;left:0;right:0;height:7px;
+  background:repeating-linear-gradient(90deg,var(--sage) 0,var(--sage) 13px,var(--moss) 13px,var(--moss) 24px);}
+#ftr p{font-size:7px;letter-spacing:.16em;color:var(--lsage);text-transform:uppercase;opacity:.75;}
+
+/* Compass */
+#cmp{position:absolute;bottom:12px;right:12px;width:50px;height:50px;z-index:5;opacity:.9;}
+
+/* POPUP */
+#pop{
+  position:fixed;z-index:999;pointer-events:none;
+  opacity:0;transform:translateY(8px) scale(.97);
+  transition:opacity .16s ease,transform .16s ease;
+  min-width:268px;max-width:306px;
+  filter:drop-shadow(4px 6px 14px rgba(46,31,15,.55));
+}
+#pop.on{opacity:1;transform:translateY(0) scale(1);}
+.pbox{background:var(--cream);border:2.5px solid var(--red);box-shadow:5px 5px 0 var(--bark);overflow:hidden;}
+.pts{height:8px;background:repeating-linear-gradient(90deg,var(--red) 0,var(--red) 11px,var(--gold) 11px,var(--gold) 19px,var(--moss) 19px,var(--moss) 27px,var(--gold) 27px,var(--gold) 35px);}
+.phdr{display:flex;align-items:flex-start;justify-content:space-between;background:var(--bark);padding:9px 12px 8px;gap:8px;}
+.pnw{flex:1;}
+.pey{font-size:6px;letter-spacing:.27em;color:var(--sand);text-transform:uppercase;display:block;margin-bottom:2px;}
+.pnm{font-family:'Playfair Display',serif;font-size:17px;color:var(--cream);line-height:1.05;}
+.pseat{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:.22em;color:var(--sand);text-transform:uppercase;display:block;margin-top:3px;opacity:.75;}
+.pbg{background:var(--red);padding:5px 8px;text-align:center;flex-shrink:0;min-width:66px;}
+.pbl{font-size:6px;letter-spacing:.19em;color:var(--sand);text-transform:uppercase;display:block;margin-bottom:2px;}
+.pbn{font-family:'Playfair Display',serif;font-size:14px;color:var(--cream);line-height:1;display:block;}
+.pbsm{font-size:5px;color:rgba(200,169,110,.6);letter-spacing:.11em;text-transform:uppercase;display:block;margin-top:1px;}
+.pbd{padding:9px 12px 8px;}
+.eh{font-size:6.5px;letter-spacing:.25em;color:var(--moss);text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.eh::after{content:'';flex:1;height:1px;background:var(--sand);opacity:.38;}
+.er{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.erk{font-family:'Playfair Display',serif;font-size:10px;color:var(--sand);width:10px;flex-shrink:0;text-align:center;opacity:.7;}
+.ei{flex:1;min-width:0;}
+.en{font-size:9.5px;font-weight:600;color:var(--bark);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ebb{margin-top:2px;height:3px;background:rgba(139,37,0,.1);}
+.eb{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));}
+.ec{font-family:'Crimson Text',serif;font-size:12px;color:var(--red);flex-shrink:0;}
+.pbs2{height:4px;background:repeating-linear-gradient(90deg,var(--moss) 0,var(--moss) 9px,var(--sage) 9px,var(--sage) 17px);}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div id="hdr">
+    <div class="hstripe"></div>
+    <div class="flw"><i></i><i></i><i></i><i></i><i></i></div>
+    <h1>Wisconsin</h1>
+    <div class="hd"></div>
+    <span class="hs">County Employment Atlas</span>
+    <div class="hr">
+      <p>72 Counties · The Badger State · Est. 1848</p>
+      <p>Hover any county to explore top employers</p>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="side">
+    <div class="sstripe"></div>
+    <div class="ss">
+      <h4>Population</h4>
+      <div class="lr"><div class="lsw" style="background:#1E2A1F;"></div><span class="ll">&gt; 500K</span></div>
+      <div class="lr"><div class="lsw" style="background:#2E3D28;"></div><span class="ll">200K–500K</span></div>
+      <div class="lr"><div class="lsw" style="background:#4A5C3A;"></div><span class="ll">100K–200K</span></div>
+      <div class="lr"><div class="lsw" style="background:#6B7A52;"></div><span class="ll">50K–100K</span></div>
+      <div class="lr"><div class="lsw" style="background:#8E9870;"></div><span class="ll">25K–50K</span></div>
+      <div class="lr"><div class="lsw" style="background:#B0B48A;"></div><span class="ll">10K–25K</span></div>
+      <div class="lr"><div class="lsw" style="background:#CEC9A0;"></div><span class="ll">&lt; 10K</span></div>
+    </div>
+    <div class="ss">
+      <h4>Top State Employers</h4>
+      <div class="ind"><span class="irank">1</span>Aurora Health Care</div>
+      <div class="ind"><span class="irank">2</span>UW-Madison</div>
+      <div class="ind"><span class="irank">3</span>Froedtert Health</div>
+      <div class="ind"><span class="irank">4</span>State of Wisconsin</div>
+      <div class="ind"><span class="irank">5</span>Epic Systems</div>
+      <div class="ind"><span class="irank">6</span>Marshfield Clinic</div>
+      <div class="ind"><span class="irank">7</span>Ascension Health</div>
+      <div class="ind"><span class="irank">8</span>Kohler Co.</div>
+    </div>
+    <div class="ss sbot">
+      <h4>Statewide</h4>
+      <p style="text-align:center;">Total Population</p>
+      <span class="sbig">5.9 M</span>
+      <p style="text-align:center;">72 Counties · 65,496 mi²</p>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map">
+    <!-- SVG fills the map div; viewBox is computed to fit all county paths -->
+    <svg id="wi-svg" viewBox="14 28 544 716" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+      <g id="cg"></g>
+      <g id="lg"></g>
+    </svg>
+    <svg id="cmp" viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="23" fill="rgba(46,31,15,.88)" stroke="#C8A96E" stroke-width="1.3"/>
+      <polygon points="25,4 22.5,25 25,29 27.5,25" fill="#8B2500"/>
+      <polygon points="25,46 22.5,25 25,21 27.5,25" fill="#C8A96E"/>
+      <polygon points="4,25 25,22.5 29,25 25,27.5" fill="#C8A96E"/>
+      <polygon points="46,25 25,22.5 21,25 25,27.5" fill="#C8A96E"/>
+      <circle cx="25" cy="25" r="2.2" fill="#C4943A"/>
+      <text x="25" y="14" text-anchor="middle" font-family="Josefin Sans" font-size="7.5" fill="#8B2500" font-weight="600">N</text>
+    </svg>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="ftr">
+    <div class="fstripe"></div>
+    <p>Geographic data: U.S. Census Bureau TIGER/Line Topojson · Employment: WI DWD &amp; BLS QCEW 2023 · Population: ACS 5-Year Estimates 2023</p>
+    <a href="https://instagram.com/wag1samir" target="_blank" rel="noopener" style="margin-left:auto;font-size:6.5px;letter-spacing:.14em;color:var(--sand);opacity:.55;text-transform:uppercase;text-decoration:none;white-space:nowrap;flex-shrink:0;">map created by samir</a>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div id="pop">
+  <div class="pbox">
+    <div class="pts"></div>
+    <div class="phdr">
+      <div class="pnw">
+        <span class="pey">Wisconsin County</span>
+        <div class="pnm" id="pnm"></div>
+        <span class="pseat" id="pseat"></span>
+      </div>
+      <div class="pbg">
+        <span class="pbl">Population</span>
+        <span class="pbn" id="ppn"></span>
+        <span class="pbsm">residents</span>
+      </div>
+    </div>
+    <div class="pbd">
+      <div class="eh">Top Employers</div>
+      <div id="pem"></div>
+    </div>
+    <div class="pbs2"></div>
+  </div>
+</div>
+
+<script>
+const PATHS={"Marinette": "M 404.56,251.86 L 436.58,252.33 L 436.37,243.84 L 441.65,241.87 L 444.59,246.43 L 452.12,246.66 L 455.05,250.67 L 458.23,251.98 L 460.87,256.64 L 457.14,258.15 L 461.76,266.09 L 459.45,273.58 L 460.54,278.6 L 458.77,282.96 L 454.77,286.72 L 455.83,290.78 L 453.69,293.42 L 456.03,298.42 L 456.03,298.42 L 464.53,297.11 L 469.43,291.91 L 472.98,294.49 L 473.72,298.13 L 470.4,303.39 L 466.02,316.22 L 466.74,319.32 L 470.95,322.21 L 473.63,327.19 L 479.7,328.51 L 476.72,334.84 L 476.66,343.45 L 464.94,345.19 L 465.17,342.06 L 448.95,342.18 L 448.86,338.74 L 432.98,338.81 L 433.04,327.94 L 426.69,327.88 L 426.76,317.12 L 415.98,316.82 L 415.84,295.2 L 405.1,295.09 L 404.56,251.86 Z", "Waushara": "M 302.91,438.0 L 336.41,438.07 L 366.69,437.82 L 367.15,470.28 L 341.91,470.59 L 303.08,471.0 L 302.91,438.0 Z", "Sawyer": "M 132.38,197.48 L 159.46,197.85 L 186.53,198.65 L 186.27,220.38 L 207.82,220.49 L 207.45,263.51 L 132.05,262.57 L 132.58,219.33 L 131.95,219.21 L 132.38,197.48 Z", "Waupaca": "M 335.88,383.24 L 391.17,382.8 L 391.05,393.88 L 379.52,394.08 L 379.89,437.51 L 366.69,437.82 L 336.41,438.07 L 335.88,383.24 Z", "Manitowoc": "M 442.38,436.57 L 456.22,436.21 L 456.26,425.35 L 466.87,425.06 L 487.12,424.46 L 487.25,428.76 L 490.03,435.23 L 489.63,442.88 L 485.9,447.41 L 478.62,452.57 L 477.85,459.26 L 475.38,463.32 L 471.64,479.45 L 443.78,480.19 L 443.18,469.24 L 442.38,436.57 Z", "Lincoln": "M 263.05,295.93 L 263.06,274.2 L 316.87,274.02 L 317.27,284.99 L 317.58,328.55 L 263.03,328.62 L 262.73,301.09 L 263.05,295.93 Z", "Taylor": "M 185.27,306.64 L 185.4,295.67 L 207.17,296.1 L 226.43,296.35 L 263.05,295.93 L 262.73,301.09 L 263.03,328.62 L 249.39,328.6 L 249.37,339.46 L 238.89,339.43 L 228.4,339.7 L 185.2,339.33 L 185.27,306.64 Z", "Waukesha": "M 400.67,568.18 L 411.5,568.18 L 443.97,567.79 L 443.85,589.71 L 444.38,611.4 L 422.6,612.0 L 400.82,612.33 L 400.42,590.31 L 400.67,568.18 Z", "Marathon": "M 238.89,339.43 L 249.37,339.46 L 249.39,328.6 L 263.03,328.62 L 317.58,328.55 L 335.34,328.5 L 335.45,339.69 L 335.88,383.24 L 312.22,382.89 L 280.58,383.13 L 238.71,383.09 L 238.89,339.43 Z", "Clark": "M 185.2,339.33 L 228.4,339.7 L 238.89,339.43 L 238.71,383.09 L 238.58,415.67 L 216.75,415.87 L 195.23,415.58 L 195.34,404.72 L 184.44,404.6 L 184.57,393.74 L 184.95,361.06 L 185.2,339.33 Z", "Portage": "M 280.58,383.13 L 312.22,382.89 L 335.88,383.24 L 336.41,438.07 L 302.91,438.0 L 291.64,437.83 L 291.2,404.82 L 280.62,404.85 L 280.58,383.13 Z", "Wood": "M 238.58,415.67 L 238.71,383.09 L 280.58,383.13 L 280.62,404.85 L 291.2,404.82 L 291.64,437.83 L 275.53,437.65 L 238.82,437.71 L 238.18,436.95 L 238.58,415.67 Z", "Menominee": "M 387.03,327.91 L 400.67,327.78 L 400.98,360.47 L 378.99,360.75 L 378.82,349.89 L 357.19,350.3 L 357.05,339.44 L 356.91,328.37 L 387.03,327.91 Z", "Green Lake": "M 341.91,470.59 L 367.15,470.28 L 367.3,481.24 L 367.76,514.02 L 357.02,514.16 L 345.95,514.5 L 345.93,513.0 L 335.19,513.22 L 335.05,498.6 L 342.19,497.78 L 342.13,492.19 L 339.21,492.01 L 339.13,483.95 L 342.05,483.92 L 341.91,470.59 Z", "Richland": "M 238.47,524.55 L 249.56,524.48 L 249.11,573.37 L 242.89,569.16 L 234.7,567.62 L 227.48,568.66 L 216.99,567.31 L 205.8,572.16 L 206.06,540.79 L 205.87,524.57 L 238.47,524.55 Z", "Rock": "M 324.92,613.11 L 357.59,612.46 L 379.38,612.69 L 379.22,623.75 L 380.05,656.49 L 364.78,656.39 L 325.6,656.16 L 324.92,613.11 Z", "Kenosha": "M 423.22,640.88 L 434.15,640.53 L 433.99,633.34 L 469.07,632.67 L 467.92,639.14 L 470.34,654.65 L 433.49,655.04 L 423.53,655.37 L 423.22,640.88 Z", "Marquette": "M 303.08,471.0 L 341.91,470.59 L 342.05,483.92 L 339.13,483.95 L 339.21,492.01 L 342.13,492.19 L 342.19,497.78 L 335.05,498.6 L 335.19,513.22 L 303.29,513.45 L 303.08,471.0 Z", "Price": "M 207.45,263.51 L 207.82,220.49 L 240.61,220.8 L 263.09,220.74 L 263.08,231.39 L 263.06,274.2 L 263.05,295.93 L 226.43,296.35 L 207.17,296.1 L 207.45,263.51 Z", "Langlade": "M 317.27,284.99 L 322.62,284.62 L 350.68,284.99 L 361.39,284.85 L 361.22,295.61 L 383.0,295.28 L 383.36,317.01 L 386.85,317.05 L 387.03,327.91 L 356.91,328.37 L 357.05,339.44 L 335.45,339.69 L 335.34,328.5 L 317.58,328.55 L 317.27,284.99 Z", "Chippewa": "M 119.92,316.11 L 130.68,316.54 L 131.21,305.8 L 185.27,306.64 L 185.2,339.33 L 184.95,361.06 L 120.27,360.22 L 120.96,327.0 L 119.7,326.97 L 119.92,316.11 Z", "Bayfield": "M 182.84,94.47 L 187.46,92.7 L 187.1,97.43 L 182.84,94.47 Z M 133.84,122.52 L 137.23,122.37 L 152.14,115.11 L 159.87,112.33 L 161.76,109.56 L 166.94,112.01 L 169.15,108.49 L 176.84,107.52 L 183.69,100.08 L 187.97,101.42 L 192.31,97.7 L 195.37,98.17 L 202.65,106.95 L 198.27,115.08 L 190.79,123.4 L 193.48,131.28 L 188.51,134.99 L 185.01,143.23 L 187.16,144.76 L 186.53,198.65 L 159.46,197.85 L 132.38,197.48 L 133.84,122.52 Z", "Vernon": "M 153.08,502.22 L 184.28,502.75 L 227.51,503.01 L 238.56,502.42 L 238.52,513.7 L 238.47,524.55 L 205.87,524.57 L 206.06,540.79 L 157.05,540.22 L 154.5,536.09 L 156.22,530.53 L 153.7,524.8 L 155.08,520.09 L 151.88,516.06 L 151.35,508.42 L 153.08,502.22 Z", "Florence": "M 381.36,215.7 L 382.97,218.36 L 387.35,218.83 L 388.23,215.37 L 396.65,215.0 L 397.32,217.68 L 403.92,219.81 L 407.63,218.12 L 415.23,223.02 L 419.57,221.42 L 430.94,226.32 L 434.55,233.55 L 429.37,239.27 L 432.27,242.64 L 436.37,243.84 L 436.58,252.33 L 404.56,251.86 L 382.6,252.26 L 382.06,219.78 L 381.36,215.7 Z", "Ozaukee": "M 444.86,523.92 L 467.35,523.22 L 466.33,533.46 L 460.1,545.13 L 457.56,560.13 L 459.39,567.39 L 443.97,567.79 L 443.44,545.88 L 445.4,545.83 L 444.86,523.92 Z", "Dodge": "M 357.02,514.16 L 367.76,514.02 L 411.71,513.59 L 412.25,524.43 L 412.37,546.14 L 411.06,546.17 L 411.5,568.18 L 400.67,568.18 L 357.37,568.63 L 357.24,557.78 L 357.43,546.93 L 357.02,514.16 Z", "Pierce": "M 21.24,356.71 L 55.95,357.73 L 77.27,358.98 L 76.69,380.59 L 76.2,398.75 L 60.19,398.09 L 58.32,396.42 L 49.72,394.76 L 40.12,394.24 L 37.39,389.42 L 32.97,387.56 L 33.38,384.99 L 23.79,375.3 L 17.54,371.11 L 17.32,368.3 L 21.45,359.84 L 21.24,356.71 Z", "Polk": "M 14.3,258.42 L 45.37,259.8 L 46.03,248.95 L 78.63,250.24 L 78.34,260.99 L 76.56,314.85 L 23.71,313.21 L 23.75,302.99 L 25.03,302.5 L 29.3,297.91 L 29.09,294.78 L 33.99,289.89 L 34.49,284.52 L 27.55,275.14 L 27.98,271.82 L 23.7,268.23 L 20.52,269.08 L 14.0,266.59 L 14.3,258.42 Z", "St. Croix": "M 23.71,313.21 L 76.56,314.85 L 76.26,325.82 L 78.16,325.98 L 77.27,358.98 L 55.95,357.73 L 21.24,356.71 L 20.78,351.74 L 23.16,347.31 L 21.41,342.83 L 22.29,335.87 L 18.92,332.09 L 24.22,326.04 L 22.66,316.19 L 23.71,313.21 Z", "Columbia": "M 286.37,513.73 L 303.29,513.45 L 335.19,513.22 L 345.93,513.0 L 345.95,514.5 L 357.02,514.16 L 357.43,546.93 L 357.24,557.78 L 324.81,558.55 L 324.8,556.93 L 292.38,557.23 L 292.37,553.9 L 296.28,548.73 L 303.13,546.22 L 303.35,524.09 L 291.28,522.42 L 292.57,519.19 L 287.36,517.27 L 286.37,513.73 Z", "Washburn": "M 89.12,196.5 L 132.38,197.48 L 131.95,219.21 L 132.58,219.33 L 132.05,262.57 L 89.02,261.27 L 89.81,218.25 L 88.56,218.22 L 89.12,196.5 Z", "Pepin": "M 60.19,398.09 L 76.2,398.75 L 76.69,380.59 L 119.83,381.72 L 119.6,392.69 L 88.55,391.97 L 86.3,392.67 L 84.12,402.62 L 80.25,415.42 L 68.8,411.24 L 66.29,409.13 L 61.02,402.84 L 60.19,398.09 Z", "Calumet": "M 410.16,436.86 L 429.17,436.67 L 442.38,436.57 L 443.18,469.24 L 443.78,480.19 L 432.76,480.45 L 432.63,474.76 L 410.94,475.12 L 410.16,436.86 Z", "Outagamie": "M 391.05,393.88 L 423.39,393.89 L 428.19,393.56 L 429.17,436.67 L 410.16,436.86 L 379.89,437.51 L 379.52,394.08 L 391.05,393.88 Z", "Buffalo": "M 119.6,392.69 L 130.48,392.91 L 129.64,436.66 L 123.11,440.94 L 122.04,445.86 L 126.17,448.85 L 128.95,455.46 L 125.25,462.7 L 126.51,464.34 L 123.3,463.52 L 113.15,454.17 L 112.25,451.03 L 103.64,446.43 L 99.85,442.69 L 97.07,437.89 L 96.87,432.4 L 94.34,430.73 L 94.48,425.03 L 90.08,420.62 L 80.25,415.42 L 84.12,402.62 L 86.3,392.67 L 88.55,391.97 L 119.6,392.69 Z", "Barron": "M 78.34,260.99 L 89.02,261.27 L 132.05,262.57 L 131.21,305.8 L 130.68,316.54 L 119.92,316.11 L 76.56,314.85 L 78.34,260.99 Z", "Kewaunee": "M 466.07,385.39 L 468.51,381.23 L 500.79,380.45 L 495.32,389.45 L 492.66,396.21 L 487.12,424.46 L 466.87,425.06 L 466.07,385.39 Z", "Iron": "M 219.58,145.17 L 223.29,144.55 L 231.0,147.5 L 232.83,151.7 L 236.54,151.08 L 236.54,151.08 L 239.63,153.67 L 247.97,155.42 L 256.6,173.4 L 256.29,176.31 L 273.05,180.94 L 273.08,220.74 L 263.09,220.74 L 240.61,220.8 L 240.69,199.07 L 229.79,199.13 L 229.85,188.26 L 218.98,188.19 L 219.58,145.17 Z", "Crawford": "M 157.05,540.22 L 206.06,540.79 L 205.8,572.16 L 203.83,572.04 L 198.85,578.12 L 193.91,579.9 L 189.26,583.82 L 180.69,585.66 L 179.35,587.9 L 169.4,594.22 L 162.5,593.26 L 160.83,594.63 L 159.03,583.11 L 159.13,576.67 L 162.12,574.14 L 164.17,568.58 L 170.16,562.21 L 166.01,553.99 L 157.24,549.46 L 157.05,540.22 Z", "Burnett": "M 18.45,247.81 L 23.62,243.68 L 30.43,227.99 L 36.85,223.15 L 44.74,220.93 L 47.37,216.93 L 51.69,218.46 L 55.0,212.54 L 62.46,213.52 L 64.52,207.23 L 67.67,206.24 L 67.96,195.92 L 89.12,196.5 L 88.56,218.22 L 89.81,218.25 L 89.02,261.27 L 78.34,260.99 L 78.63,250.24 L 46.03,248.95 L 45.37,259.8 L 14.3,258.42 L 16.53,248.71 L 18.45,247.81 Z", "Dane": "M 281.6,568.11 L 284.54,564.02 L 291.42,562.39 L 292.38,557.23 L 324.8,556.93 L 324.81,558.55 L 357.24,557.78 L 357.37,568.63 L 357.59,612.46 L 324.92,613.11 L 324.91,611.61 L 281.69,611.72 L 281.6,568.11 Z", "Douglas": "M 68.91,163.34 L 69.8,132.59 L 76.53,134.5 L 80.05,129.97 L 77.33,127.85 L 82.3,126.48 L 83.31,123.39 L 87.65,122.32 L 93.98,127.87 L 100.06,131.24 L 110.57,130.31 L 133.84,122.52 L 132.38,197.48 L 89.12,196.5 L 67.96,195.92 L 68.91,163.34 Z", "Grant": "M 160.83,594.63 L 162.5,593.26 L 169.4,594.22 L 179.35,587.9 L 180.69,585.66 L 189.26,583.82 L 193.91,579.9 L 198.85,578.12 L 203.83,572.04 L 205.8,572.16 L 216.99,567.31 L 227.48,568.66 L 227.54,617.21 L 227.34,655.43 L 207.42,655.08 L 207.46,651.11 L 201.59,639.36 L 184.09,634.03 L 176.52,631.04 L 168.67,624.39 L 165.59,607.81 L 161.67,605.07 L 160.83,594.63 Z", "Racine": "M 422.6,612.0 L 444.38,611.4 L 466.49,610.93 L 472.3,617.97 L 471.24,627.56 L 469.07,632.67 L 433.99,633.34 L 434.15,640.53 L 423.22,640.88 L 422.6,612.0 Z", "La Crosse": "M 138.39,469.61 L 147.77,469.78 L 146.26,463.08 L 152.8,458.89 L 156.96,461.32 L 158.96,457.05 L 163.15,458.08 L 163.13,459.16 L 179.28,459.48 L 184.78,459.44 L 184.28,502.75 L 153.08,502.22 L 154.15,496.32 L 150.72,487.02 L 141.88,473.44 L 138.39,469.61 Z", "Eau Claire": "M 120.27,360.22 L 184.95,361.06 L 184.57,393.74 L 162.81,393.35 L 130.48,392.91 L 119.6,392.69 L 119.83,381.72 L 120.27,360.22 Z", "Milwaukee": "M 443.97,567.79 L 459.39,567.39 L 458.91,574.18 L 461.78,583.23 L 459.64,589.41 L 464.43,595.95 L 464.68,605.07 L 466.49,610.93 L 444.38,611.4 L 443.85,589.71 L 443.97,567.79 Z", "Jackson": "M 162.81,393.35 L 184.57,393.74 L 184.44,404.6 L 195.34,404.72 L 195.23,415.58 L 216.75,415.87 L 238.58,415.67 L 238.18,436.95 L 238.82,437.71 L 238.77,449.32 L 227.81,448.62 L 186.51,448.6 L 179.05,452.06 L 179.28,459.48 L 163.13,459.16 L 163.15,458.08 L 163.45,437.12 L 162.16,437.1 L 162.81,393.35 Z", "Door": "M 534.59,294.45 L 536.16,285.78 L 546.0,287.22 L 539.29,301.26 L 534.59,294.45 Z M 498.3,314.9 L 502.05,313.27 L 502.91,320.02 L 498.39,317.69 L 498.3,314.9 Z M 500.79,380.45 L 468.51,381.23 L 469.62,375.29 L 479.09,360.7 L 487.25,356.57 L 490.77,357.22 L 494.16,353.45 L 499.05,356.73 L 496.97,351.85 L 500.45,341.3 L 508.62,329.29 L 510.47,318.47 L 514.28,318.87 L 520.81,315.2 L 520.9,308.84 L 526.03,302.2 L 533.0,302.26 L 532.72,311.63 L 527.68,312.36 L 527.61,327.64 L 523.97,332.08 L 521.41,331.75 L 520.03,337.5 L 515.78,343.25 L 517.54,347.81 L 513.55,352.15 L 514.92,354.9 L 509.31,358.65 L 505.4,365.45 L 500.79,380.45 Z", "Oconto": "M 383.0,295.28 L 405.1,295.09 L 415.84,295.2 L 415.98,316.82 L 426.76,317.12 L 426.69,327.88 L 433.04,327.94 L 432.98,338.81 L 448.86,338.74 L 448.95,342.18 L 465.17,342.06 L 464.94,345.19 L 458.38,349.67 L 459.47,354.7 L 456.14,361.14 L 453.31,362.83 L 450.04,371.84 L 446.33,376.45 L 445.82,381.74 L 424.43,382.89 L 423.45,382.05 L 422.25,371.22 L 422.33,360.35 L 400.98,360.47 L 400.67,327.78 L 387.03,327.91 L 386.85,317.05 L 383.36,317.01 L 383.0,295.28 Z", "Lafayette": "M 227.54,617.21 L 281.7,617.19 L 281.77,655.74 L 273.48,655.64 L 227.34,655.43 L 227.54,617.21 Z", "Green": "M 281.69,611.72 L 324.91,611.61 L 324.92,613.11 L 325.6,656.16 L 322.28,656.19 L 281.77,655.74 L 281.7,617.19 L 281.69,611.72 Z", "Vilas": "M 263.09,220.74 L 273.08,220.74 L 273.05,180.94 L 345.61,200.71 L 354.4,205.77 L 359.42,208.61 L 359.58,220.12 L 349.58,220.24 L 349.72,231.11 L 338.45,230.7 L 338.82,236.07 L 327.86,235.64 L 327.82,230.58 L 316.87,230.99 L 263.08,231.39 L 263.09,220.74 Z", "Shawano": "M 335.45,339.69 L 357.05,339.44 L 357.19,350.3 L 378.82,349.89 L 378.99,360.75 L 400.98,360.47 L 422.33,360.35 L 422.25,371.22 L 423.45,382.05 L 423.39,393.89 L 391.05,393.88 L 391.17,382.8 L 335.88,383.24 L 335.45,339.69 Z", "Dunn": "M 76.56,314.85 L 119.92,316.11 L 119.7,326.97 L 120.96,327.0 L 120.27,360.22 L 119.83,381.72 L 76.69,380.59 L 77.27,358.98 L 78.16,325.98 L 76.26,325.82 L 76.56,314.85 Z", "Trempealeau": "M 130.48,392.91 L 162.81,393.35 L 162.16,437.1 L 163.45,437.12 L 163.15,458.08 L 158.96,457.05 L 156.96,461.32 L 152.8,458.89 L 146.26,463.08 L 147.77,469.78 L 138.39,469.61 L 137.13,467.44 L 126.51,464.34 L 125.25,462.7 L 128.95,455.46 L 126.17,448.85 L 122.04,445.86 L 123.11,440.94 L 129.64,436.66 L 130.48,392.91 Z", "Fond du Lac": "M 367.3,481.24 L 411.05,480.82 L 410.94,475.12 L 432.63,474.76 L 432.76,480.45 L 433.77,524.07 L 412.25,524.43 L 411.71,513.59 L 367.76,514.02 L 367.3,481.24 Z", "Ashland": "M 227.0,92.83 L 229.5,83.92 L 233.17,83.51 L 231.6,91.57 L 227.0,92.83 Z M 221.99,108.61 L 228.46,105.1 L 224.13,110.13 L 221.99,108.61 Z M 210.98,102.4 L 212.53,100.15 L 221.76,97.1 L 223.28,98.51 L 219.87,103.65 L 212.49,104.78 L 210.98,102.4 Z M 201.67,113.07 L 202.62,110.18 L 208.8,105.82 L 209.09,107.87 L 201.67,113.07 Z M 203.66,97.5 L 207.9,103.34 L 203.91,103.63 L 201.49,99.63 L 203.66,97.5 Z M 200.67,89.94 L 211.42,86.16 L 214.74,92.1 L 219.06,88.48 L 219.64,93.22 L 214.73,94.15 L 209.47,99.38 L 206.14,94.83 L 201.25,92.63 L 200.67,89.94 Z M 198.83,119.82 L 204.08,117.94 L 214.0,108.77 L 218.28,112.25 L 209.02,115.72 L 210.53,119.5 L 205.3,119.88 L 199.1,123.81 L 198.83,119.82 Z M 187.16,144.76 L 198.63,139.94 L 202.05,137.28 L 203.65,131.49 L 207.01,135.07 L 219.58,145.17 L 218.98,188.19 L 229.85,188.26 L 229.79,199.13 L 240.69,199.07 L 240.61,220.8 L 207.82,220.49 L 186.27,220.38 L 186.53,198.65 L 187.16,144.76 Z", "Washington": "M 412.25,524.43 L 433.77,524.07 L 444.86,523.92 L 445.4,545.83 L 443.44,545.88 L 443.97,567.79 L 411.5,568.18 L 411.06,546.17 L 412.37,546.14 L 412.25,524.43 Z", "Walworth": "M 379.38,612.69 L 400.82,612.33 L 422.6,612.0 L 423.22,640.88 L 423.53,655.37 L 386.36,656.28 L 380.05,656.49 L 379.22,623.75 L 379.38,612.69 Z", "Adams": "M 275.53,437.65 L 291.64,437.83 L 302.91,438.0 L 303.08,471.0 L 303.29,513.45 L 286.37,513.73 L 283.1,507.29 L 279.18,495.91 L 270.4,485.81 L 268.46,479.37 L 271.05,478.29 L 269.1,469.37 L 266.19,467.76 L 264.58,457.65 L 268.77,453.46 L 269.42,447.98 L 273.61,449.8 L 275.54,444.86 L 273.61,442.17 L 275.53,437.65 Z", "Rusk": "M 132.05,262.57 L 207.45,263.51 L 207.17,296.1 L 185.4,295.67 L 185.27,306.64 L 131.21,305.8 L 132.05,262.57 Z", "Sauk": "M 238.52,513.7 L 286.37,513.73 L 287.36,517.27 L 292.57,519.19 L 291.28,522.42 L 303.35,524.09 L 303.13,546.22 L 296.28,548.73 L 292.37,553.9 L 292.38,557.23 L 291.42,562.39 L 284.54,564.02 L 281.6,568.11 L 275.7,570.37 L 267.17,569.52 L 259.29,573.81 L 249.11,573.37 L 249.56,524.48 L 238.47,524.55 L 238.52,513.7 Z", "Jefferson": "M 357.37,568.63 L 400.67,568.18 L 400.42,590.31 L 400.82,612.33 L 379.38,612.69 L 357.59,612.46 L 357.37,568.63 Z", "Oneida": "M 263.08,231.39 L 316.87,230.99 L 327.82,230.58 L 327.86,235.64 L 338.82,236.07 L 338.45,230.7 L 349.72,231.11 L 350.68,284.99 L 322.62,284.62 L 317.27,284.99 L 316.87,274.02 L 263.06,274.2 L 263.08,231.39 Z", "Monroe": "M 238.77,449.32 L 238.56,502.42 L 227.51,503.01 L 184.28,502.75 L 184.78,459.44 L 179.28,459.48 L 179.05,452.06 L 186.51,448.6 L 227.81,448.62 L 238.77,449.32 Z", "Forest": "M 359.42,208.61 L 370.12,215.02 L 376.35,214.17 L 381.36,215.7 L 382.06,219.78 L 382.6,252.26 L 404.56,251.86 L 405.1,295.09 L 383.0,295.28 L 361.22,295.61 L 361.39,284.85 L 350.68,284.99 L 349.72,231.11 L 349.58,220.24 L 359.58,220.12 L 359.42,208.61 Z", "Juneau": "M 238.77,449.32 L 238.82,437.71 L 275.53,437.65 L 273.61,442.17 L 275.54,444.86 L 273.61,449.8 L 269.42,447.98 L 268.77,453.46 L 264.58,457.65 L 266.19,467.76 L 269.1,469.37 L 271.05,478.29 L 268.46,479.37 L 270.4,485.81 L 279.18,495.91 L 283.1,507.29 L 286.37,513.73 L 238.52,513.7 L 238.56,502.42 L 238.77,449.32 Z", "Winnebago": "M 366.69,437.82 L 379.89,437.51 L 410.16,436.86 L 410.94,475.12 L 411.05,480.82 L 367.3,481.24 L 367.15,470.28 L 366.69,437.82 Z", "Brown": "M 423.45,382.05 L 424.43,382.89 L 445.82,381.74 L 445.4,390.35 L 441.37,395.83 L 447.89,400.19 L 451.72,399.33 L 453.81,393.58 L 461.94,386.47 L 466.07,385.39 L 466.87,425.06 L 456.26,425.35 L 456.22,436.21 L 442.38,436.57 L 429.17,436.67 L 428.19,393.56 L 423.39,393.89 L 423.45,382.05 Z", "Iowa": "M 227.48,568.66 L 234.7,567.62 L 242.89,569.16 L 249.11,573.37 L 259.29,573.81 L 267.17,569.52 L 275.7,570.37 L 281.6,568.11 L 281.69,611.72 L 281.7,617.19 L 227.54,617.21 L 227.48,568.66 Z", "Sheboygan": "M 432.76,480.45 L 443.78,480.19 L 471.64,479.45 L 472.26,489.64 L 475.01,494.94 L 474.68,505.92 L 468.2,518.79 L 467.35,523.22 L 444.86,523.92 L 433.77,524.07 L 432.76,480.45 Z"};
+const CENTERS={"Marinette": [442.1, 293.5], "Waushara": [335.0, 454.4], "Sawyer": [169.9, 230.5], "Waupaca": [363.5, 410.4], "Manitowoc": [466.2, 452.3], "Lincoln": [290.2, 301.3], "Taylor": [224.1, 317.7], "Waukesha": [422.4, 590.1], "Marathon": [287.3, 355.9], "Clark": [211.7, 377.6], "Portage": [308.5, 410.5], "Wood": [264.9, 410.5], "Menominee": [378.9, 344.3], "Green Lake": [351.4, 492.4], "Richland": [227.7, 548.9], "Rock": [352.5, 634.5], "Kenosha": [446.8, 644.0], "Marquette": [322.6, 492.0], "Price": [235.1, 258.4], "Langlade": [352.1, 312.2], "Chippewa": [152.5, 333.4], "Bayfield": [185.2, 95.1], "Vernon": [195.0, 521.5], "Florence": [409.0, 233.7], "Ozaukee": [455.4, 545.5], "Dodge": [384.7, 541.1], "Pierce": [47.3, 377.7], "Polk": [46.3, 281.9], "St. Croix": [48.5, 336.1], "Columbia": [321.9, 535.8], "Washburn": [110.6, 229.5], "Pepin": [90.0, 398.0], "Calumet": [427.0, 458.5], "Outagamie": [404.3, 415.5], "Buffalo": [105.4, 428.2], "Barron": [104.3, 288.8], "Kewaunee": [483.4, 402.8], "Iron": [246.0, 182.7], "Crawford": [181.6, 567.4], "Burnett": [52.1, 228.6], "Dane": [319.6, 585.0], "Douglas": [100.9, 159.9], "Grant": [194.2, 611.4], "Racine": [447.5, 625.9], "La Crosse": [161.6, 479.9], "Eau Claire": [152.3, 377.0], "Milwaukee": [455.2, 589.4], "Jackson": [200.5, 426.4], "Door": [540.3, 293.5], "Oconto": [424.1, 339.0], "Lafayette": [254.6, 636.5], "Green": [303.6, 633.9], "Vilas": [311.3, 208.5], "Shawano": [379.4, 366.7], "Dunn": [98.6, 348.3], "Trempealeau": [142.7, 431.3], "Fond du Lac": [400.5, 499.6], "Ashland": [230.1, 88.2], "Washington": [428.2, 546.0], "Walworth": [401.4, 634.2], "Adams": [283.9, 475.7], "Rusk": [169.3, 284.6], "Sauk": [270.9, 543.8], "Jefferson": [379.1, 590.4], "Oneida": [306.9, 257.8], "Monroe": [208.9, 475.8], "Forest": [377.3, 252.1], "Juneau": [262.4, 475.7], "Winnebago": [388.9, 459.1], "Brown": [445.1, 409.2], "Iowa": [254.6, 592.4], "Sheboygan": [453.9, 501.8]};
+const BBOX={"Marinette": [75.1, 103.3], "Waushara": [64.2, 33.2], "Sawyer": [75.9, 66.0], "Waupaca": [55.3, 55.3], "Manitowoc": [47.6, 55.7], "Lincoln": [54.8, 54.6], "Taylor": [77.9, 44.0], "Waukesha": [44.0, 44.5], "Marathon": [97.2, 54.7], "Clark": [54.4, 76.5], "Portage": [55.8, 55.2], "Wood": [53.5, 54.7], "Menominee": [44.1, 33.0], "Green Lake": [32.7, 44.2], "Richland": [43.8, 48.9], "Rock": [55.1, 44.0], "Kenosha": [47.1, 22.7], "Marquette": [39.1, 42.9], "Price": [55.9, 75.9], "Langlade": [69.8, 55.1], "Chippewa": [65.6, 55.3], "Bayfield": [4.6, 4.7], "Vernon": [87.2, 38.6], "Florence": [55.2, 37.3], "Ozaukee": [23.9, 44.6], "Dodge": [55.4, 55.0], "Pierce": [59.9, 42.0], "Polk": [64.6, 65.9], "St. Croix": [59.2, 45.8], "Columbia": [71.1, 45.5], "Washburn": [44.0, 66.1], "Pepin": [59.6, 34.8], "Calumet": [33.6, 43.9], "Outagamie": [49.7, 43.9], "Buffalo": [50.2, 72.4], "Barron": [55.5, 55.6], "Kewaunee": [34.7, 44.6], "Iron": [54.1, 76.2], "Crawford": [49.0, 54.4], "Burnett": [75.5, 65.3], "Dane": [76.0, 56.2], "Douglas": [65.9, 75.2], "Grant": [66.7, 88.1], "Racine": [49.7, 30.0], "La Crosse": [46.4, 45.7], "Eau Claire": [65.3, 33.5], "Milwaukee": [22.6, 44.0], "Jackson": [76.7, 66.1], "Door": [11.4, 15.5], "Oconto": [82.2, 87.8], "Lafayette": [54.4, 38.5], "Green": [43.9, 44.6], "Vilas": [96.5, 55.1], "Shawano": [88.0, 54.4], "Dunn": [44.7, 66.9], "Trempealeau": [41.4, 76.9], "Fond du Lac": [66.5, 49.7], "Ashland": [6.2, 9.3], "Washington": [34.3, 44.3], "Walworth": [44.3, 44.5], "Adams": [38.7, 76.1], "Rusk": [76.2, 44.1], "Sauk": [64.9, 60.1], "Jefferson": [43.4, 44.5], "Oneida": [87.6, 54.4], "Monroe": [59.7, 54.4], "Forest": [55.5, 87.0], "Juneau": [47.8, 76.1], "Winnebago": [44.4, 44.4], "Brown": [43.5, 54.9], "Iowa": [54.2, 49.6], "Sheboygan": [42.2, 44.6]};
+const LSIZE={"Marinette": 8.0, "Waushara": 8.0, "Sawyer": 8.0, "Waupaca": 8.0, "Manitowoc": 8.0, "Lincoln": 8.0, "Taylor": 8.0, "Waukesha": 8.0, "Marathon": 8.0, "Clark": 8.0, "Portage": 8.0, "Wood": 8.0, "Menominee": 7.9, "Green Lake": 5.3, "Richland": 8.0, "Rock": 8.0, "Kenosha": 8.0, "Marquette": 7.0, "Price": 8.0, "Langlade": 8.0, "Chippewa": 8.0, "Bayfield": 0.9, "Vernon": 8.0, "Florence": 8.0, "Ozaukee": 5.5, "Dodge": 8.0, "Pierce": 8.0, "Polk": 8.0, "St. Croix": 8.0, "Columbia": 8.0, "Washburn": 8.0, "Pepin": 8.0, "Calumet": 7.7, "Outagamie": 8.0, "Buffalo": 8.0, "Barron": 8.0, "Kewaunee": 7.0, "Iron": 8.0, "Crawford": 8.0, "Burnett": 8.0, "Dane": 8.0, "Douglas": 8.0, "Grant": 8.0, "Racine": 8.0, "La Crosse": 8.0, "Eau Claire": 8.0, "Milwaukee": 4.1, "Jackson": 8.0, "Door": 4.6, "Oconto": 8.0, "Lafayette": 8.0, "Green": 8.0, "Vilas": 8.0, "Shawano": 8.0, "Dunn": 8.0, "Trempealeau": 6.1, "Fond du Lac": 8.0, "Ashland": 1.4, "Washington": 5.5, "Walworth": 8.0, "Adams": 8.0, "Rusk": 8.0, "Sauk": 8.0, "Jefferson": 7.8, "Oneida": 8.0, "Monroe": 8.0, "Forest": 8.0, "Juneau": 8.0, "Winnebago": 8.0, "Brown": 8.0, "Iowa": 8.0, "Sheboygan": 7.6};
+const D={"Adams": {"p": 20153, "e": [["Adams County", 800], ["Walmart", 350], ["Dells Bells", 280], ["Adams-Marquette Electric", 220], ["Amherst School Dist.", 180]]}, "Ashland": {"p": 15562, "e": [["Northwood Health Systems", 650], ["Ashland County", 580], ["Bad River Band", 520], ["Walmart", 300], ["Chequamegon Schools", 280]]}, "Barron": {"p": 46038, "e": [["Leinenkugel Brewing", 900], ["Barron County", 750], ["Walmart", 480], ["Rice Lake Schools", 420], ["Marshfield Clinic", 380]]}, "Bayfield": {"p": 15396, "e": [["Red Cliff Band", 600], ["Bayfield County", 520], ["Bad River Lodge", 350], ["Ashland Schools", 280], ["Madeline Island Ferry", 240]]}, "Brown": {"p": 268740, "e": [["Bellin Health", 5200], ["HSHS St. Vincent", 4800], ["Schneider National", 4200], ["Green Bay Packers", 1800], ["NE WI Tech College", 1600]]}, "Buffalo": {"p": 12949, "e": [["Buffalo County", 450], ["Alma School Dist.", 280], ["Dairyland Power", 240], ["Mondovi Schools", 220], ["County Highway", 180]]}, "Burnett": {"p": 15457, "e": [["Burnett County", 520], ["St. Croix Casino", 480], ["Walmart", 320], ["Grantsburg Schools", 280], ["Spooner Medical Ctr", 260]]}, "Calumet": {"p": 52092, "e": [["Calumet County", 850], ["Appvion Inc.", 800], ["Chilton Schools", 620], ["Walmart", 450], ["Festival Foods", 380]]}, "Chippewa": {"p": 67416, "e": [["HSHS St. Joseph's", 1400], ["Chippewa County", 1200], ["Chippewa Falls Schools", 950], ["Amazon", 900], ["Walmart", 750]]}, "Clark": {"p": 34698, "e": [["Clark County", 820], ["Colby Schools", 650], ["Ashley HomeStore", 500], ["Walmart", 420], ["Marshfield Clinic", 380]]}, "Columbia": {"p": 57550, "e": [["Columbia County", 1200], ["Alliant Energy", 1100], ["Portage Schools", 900], ["Walmart", 650], ["Seneca Foods", 600]]}, "Crawford": {"p": 16004, "e": [["Crawford County", 580], ["Prairie du Chien Schools", 480], ["Walmart", 350], ["Eastman Chemical", 320], ["Southwest Health", 300]]}, "Dane": {"p": 587906, "e": [["UW-Madison", 22000], ["State of Wisconsin", 15000], ["Epic Systems", 12000], ["UnityPoint-Meriter", 6200], ["SSM Health", 5800]]}, "Dodge": {"p": 87296, "e": [["Beaver Dam Comm. Hospital", 1400], ["Dodge County", 1200], ["Hormel Foods", 1100], ["Walmart", 800], ["Beaver Dam Schools", 750]]}, "Door": {"p": 29556, "e": [["Door County Medical Ctr", 900], ["Door County", 850], ["Cherry Country Co-op", 380], ["Tourism", 380], ["Walmart", 320]]}, "Douglas": {"p": 44159, "e": [["Essentia Health", 1800], ["Douglas County", 1200], ["UW-Superior", 850], ["Walmart", 650], ["Northwest Hardwoods", 480]]}, "Dunn": {"p": 46028, "e": [["UW-Stout", 1800], ["Dunn County", 950], ["Menomonie Schools", 820], ["Walmart", 600], ["Colfax Schools", 480]]}, "Eau Claire": {"p": 107220, "e": [["HSHS Sacred Heart", 3200], ["UW-Eau Claire", 2800], ["Eau Claire County", 2400], ["Menard's HQ", 2200], ["Chippewa Valley Schools", 1800]]}, "Florence": {"p": 4337, "e": [["Florence County", 280], ["Nicolet Natl. Forest", 240], ["Florence Schools", 180], ["County Forest", 120], ["Iron Co. Mem. Hospital", 100]]}, "Fond du Lac": {"p": 101633, "e": [["Agnesian HealthCare", 2800], ["Fond du Lac County", 2200], ["Mercury Marine", 2000], ["Walmart", 1200], ["Fond du Lac Schools", 1100]]}, "Forest": {"p": 9018, "e": [["Forest Co. Potawatomi", 1200], ["Forest County", 380], ["Crandon Schools", 280], ["Carter Casino", 220], ["HSHS", 240]]}, "Grant": {"p": 51439, "e": [["UW-Platteville", 1400], ["SW WI Technical Col.", 850], ["Grant County", 820], ["Walmart", 620], ["Platteville Schools", 580]]}, "Green": {"p": 36980, "e": [["Green County", 780], ["Monroe Clinic", 720], ["Monroe Schools", 580], ["Badger Meter", 520], ["Walmart", 450]]}, "Green Lake": {"p": 18904, "e": [["Ripon Medical Center", 580], ["Green Lake County", 520], ["Ripon College", 480], ["Walmart", 320], ["Ripon Schools", 300]]}, "Iowa": {"p": 23651, "e": [["Lands' End HQ", 1800], ["Iowa County", 620], ["Dodgeville Schools", 520], ["Walmart", 380], ["Upland Hills Health", 340]]}, "Iron": {"p": 5614, "e": [["Iron County", 320], ["Memorial Medical Ctr", 280], ["Mercer Schools", 200], ["Nicolet Natl. Forest", 180], ["Iron County Forest", 140]]}, "Jackson": {"p": 20462, "e": [["Ho-Chunk Nation", 850], ["Jackson County", 620], ["Black River Falls Schools", 480], ["Ashley Furniture", 420], ["Walmart", 380]]}, "Jefferson": {"p": 85562, "e": [["Fort HealthCare", 2200], ["Jefferson County", 1800], ["Johnson Controls", 1600], ["Walmart", 1100], ["Jefferson Schools", 950]]}, "Juneau": {"p": 26489, "e": [["Camp Williams (Army)", 800], ["Juneau County", 680], ["Mauston Schools", 520], ["Walmart", 420], ["Adams-Columbia Electric", 350]]}, "Kenosha": {"p": 169561, "e": [["Froedtert South", 3800], ["Amazon", 3200], ["Kenosha County", 3000], ["Snap-on Inc.", 2200], ["Carthage College", 1800]]}, "Kewaunee": {"p": 20368, "e": [["Kewaunee County", 520], ["Walmart", 380], ["Manitowoc Co. Schools", 320], ["Kewaunee Engineering", 280], ["Two Rivers Schools", 260]]}, "La Crosse": {"p": 119802, "e": [["Gundersen Health", 7200], ["HSHS St. Francis", 2800], ["UW-La Crosse", 2200], ["La Crosse County", 2000], ["Kwik Trip HQ", 1800]]}, "Lafayette": {"p": 16378, "e": [["Lafayette County", 480], ["Belmont Schools", 380], ["Walmart", 280], ["Southwest Health", 260], ["Benton Schools", 220]]}, "Langlade": {"p": 19189, "e": [["Aspirus Langlade Hosp.", 580], ["Langlade County", 620], ["Antigo Schools", 520], ["Walmart", 380], ["Northcentral Tech.", 280]]}, "Lincoln": {"p": 27594, "e": [["Aspirus Lincoln Hosp.", 680], ["Lincoln County", 650], ["Merrill Schools", 580], ["Walmart", 420], ["Rhinelander Schools", 380]]}, "Manitowoc": {"p": 79208, "e": [["Holy Family Memorial", 2000], ["Manitowoc County", 1800], ["Aluminum Casting", 1200], ["Two Rivers Schools", 950], ["Walmart", 900]]}, "Marathon": {"p": 139993, "e": [["Aspirus Wausau Hospital", 5500], ["Greenheck Group", 2000], ["Marathon County", 2800], ["Wausau Schools", 2200], ["Walmart", 1800]]}, "Marinette": {"p": 41033, "e": [["Marinette Marine Corp.", 2800], ["Marinette County", 1200], ["Aurora Medical Ctr", 850], ["Walmart", 650], ["Marinette Schools", 580]]}, "Marquette": {"p": 15523, "e": [["Marquette County", 480], ["Montello Schools", 320], ["Walmart", 260], ["Wild Rose Schools", 220], ["Columbia Co. Health", 180]]}, "Menominee": {"p": 4556, "e": [["Menominee Indian Tribe", 1200], ["Menominee Indian Schools", 280], ["IHS Menominee Clinic", 180], ["Keshena Public School", 240], ["Forest Co. Potawatomi", 120]]}, "Milwaukee": {"p": 939489, "e": [["Aurora Health Care", 14000], ["Froedtert Health", 12000], ["Children's Wisconsin", 8500], ["Milwaukee County", 8000], ["MillerCoors", 3200]]}, "Monroe": {"p": 46271, "e": [["Fort McCoy (Army)", 2800], ["Monroe County", 1200], ["Tomah Health", 850], ["Walmart", 650], ["Tomah Schools", 580]]}, "Oconto": {"p": 38686, "e": [["Oconto County", 920], ["HSHS St. Clare Memorial", 680], ["Oconto Falls Schools", 580], ["Walmart", 420], ["Oconto Schools", 380]]}, "Oneida": {"p": 35998, "e": [["Howard Young Medical Ctr", 1200], ["Oneida County", 1100], ["Nicolet College", 680], ["Walmart", 580], ["Rhinelander Schools", 520]]}, "Outagamie": {"p": 190766, "e": [["ThedaCare", 6800], ["Appleton Area Schools", 3800], ["Aid Assn. for Lutherans", 1800], ["Pierce Manufacturing", 1600], ["Fox Valley Tech.", 1200]]}, "Ozaukee": {"p": 91374, "e": [["Columbia St. Mary's", 2200], ["Ozaukee County", 1800], ["Charter Manufacturing", 1600], ["Cedarburg Schools", 1200], ["Grafton Schools", 950]]}, "Pepin": {"p": 7298, "e": [["Pepin County", 320], ["Durand Schools", 240], ["Cardinal FG", 160], ["Walmart", 180], ["Pepin Area Schools", 140]]}, "Pierce": {"p": 42798, "e": [["Pierce County", 1100], ["UW-River Falls", 950], ["Ellsworth Schools", 680], ["River Falls Schools", 620], ["Walmart", 520]]}, "Polk": {"p": 44205, "e": [["Polk County", 1200], ["St. Croix Regional Medical", 950], ["Walmart", 680], ["Osceola Schools", 520], ["Amery Schools", 480]]}, "Portage": {"p": 70019, "e": [["UW-Stevens Point", 2200], ["Aspirus Portage Hosp.", 1800], ["Portage County", 1500], ["Stevens Point Schools", 1600], ["Walmart", 1200]]}, "Price": {"p": 13339, "e": [["Price County", 480], ["Phillips Schools", 380], ["Aspirus Medford Hosp.", 320], ["Walmart", 260], ["Price Co. Tourism", 180]]}, "Racine": {"p": 195859, "e": [["Ascension All Saints", 3800], ["SC Johnson", 3200], ["Racine County", 3000], ["Racine Unified Schools", 2800], ["CNH Industrial", 2400]]}, "Richland": {"p": 17217, "e": [["Richland County", 520], ["Richland Schools", 420], ["Richland Hospital", 380], ["Walmart", 280], ["La Farge Schools", 220]]}, "Rock": {"p": 163354, "e": [["Mercy Health System", 4200], ["Rock County", 3200], ["Janesville Schools", 2800], ["Walmart", 1600], ["Sherwin-Williams", 1400]]}, "Rusk": {"p": 14178, "e": [["Rusk County", 480], ["Flambeau Schools", 380], ["Walmart", 280], ["Ladysmith Schools", 260], ["Rusk Co. Memorial Hosp.", 240]]}, "St. Croix": {"p": 100370, "e": [["St. Croix County", 2400], ["Hudson Schools", 1800], ["Menards", 1600], ["Walmart", 1200], ["Hudson Hospital", 950]]}, "Sauk": {"p": 64442, "e": [["Ho-Chunk Nation", 1400], ["Sauk County", 1800], ["Reedsburg Area Medical", 1200], ["Walmart", 950], ["Baraboo Schools", 820]]}, "Sawyer": {"p": 16907, "e": [["Lac Courte Oreilles", 950], ["Sawyer County", 620], ["Hayward Schools", 480], ["Walmart", 380], ["Hayward Comm. Schools", 320]]}, "Shawano": {"p": 41522, "e": [["ThedaCare Shawano", 1100], ["Shawano County", 950], ["Shawano Schools", 780], ["Walmart", 580], ["Menominee Tribe", 520]]}, "Sheboygan": {"p": 115507, "e": [["Kohler Co.", 6800], ["HSHS St. Nicholas", 2800], ["Sheboygan County", 2200], ["Sheboygan Falls Schools", 1600], ["Walmart", 1400]]}, "Taylor": {"p": 20357, "e": [["Taylor County", 580], ["Aspirus Medford Hosp.", 420], ["Medford Schools", 480], ["Walmart", 320], ["Taylor Co. Electric", 280]]}, "Trempealeau": {"p": 29892, "e": [["Trempealeau County", 820], ["GET School Dist.", 620], ["Walmart", 480], ["Blair-Taylor Schools", 380], ["Arcadia Schools", 320]]}, "Vernon": {"p": 30822, "e": [["Organic Valley", 850], ["Vernon County", 880], ["Viroqua Schools", 680], ["Walmart", 520], ["Vernon Memorial Hosp.", 480]]}, "Vilas": {"p": 21567, "e": [["Vilas County", 680], ["Eagle River Memorial", 520], ["Minocqua Schools", 420], ["Northwoods Tourism", 580], ["Walmart", 350]]}, "Walworth": {"p": 103868, "e": [["Walworth County", 1800], ["Aurora Medical Lakeland", 1600], ["Walmart", 1400], ["Carroll University", 950], ["Whitewater Schools", 1200]]}, "Washburn": {"p": 15720, "e": [["Washburn County", 520], ["Shell Lake Schools", 380], ["Spooner Schools", 340], ["Marshfield Medical", 280], ["Walmart", 240]]}, "Washington": {"p": 135634, "e": [["Kohl's Corporation", 3200], ["Washington County", 2600], ["St. Joseph's Hospital", 2800], ["West Bend Schools", 2000], ["Walmart", 1800]]}, "Waukesha": {"p": 406978, "e": [["Waukesha County", 5800], ["GE Healthcare", 3800], ["ProHealth Care", 4200], ["Waukesha Schools", 3200], ["Snap-on Inc.", 2800]]}, "Waupaca": {"p": 51541, "e": [["Waupaca Foundry", 1800], ["ThedaCare Waupaca", 1400], ["Waupaca County", 1200], ["Waupaca Schools", 950], ["Walmart", 720]]}, "Waushara": {"p": 24467, "e": [["Waushara County", 620], ["Wautoma Schools", 480], ["Walmart", 380], ["Wild Rose Schools", 280], ["Waushara Co. Medical", 240]]}, "Winnebago": {"p": 171547, "e": [["Mercy Medical Center", 5800], ["Oshkosh Corporation", 4800], ["ThedaCare", 3200], ["Winnebago County", 2800], ["UW-Oshkosh", 2400]]}, "Wood": {"p": 74419, "e": [["Marshfield Clinic", 8500], ["Ministry St. Joseph's", 2400], ["Wood County", 2200], ["SPASH Schools", 1800], ["Walmart", 1600]]}};
+
+const SEATS={
+  "Adams":"Friendship","Ashland":"Ashland","Barron":"Barron","Bayfield":"Washburn",
+  "Brown":"Green Bay","Buffalo":"Alma","Burnett":"Siren","Calumet":"Chilton",
+  "Chippewa":"Chippewa Falls","Clark":"Neillsville","Columbia":"Portage",
+  "Crawford":"Prairie du Chien","Dane":"Madison","Dodge":"Juneau","Door":"Sturgeon Bay",
+  "Douglas":"Superior","Dunn":"Menomonie","Eau Claire":"Eau Claire","Florence":"Florence",
+  "Fond du Lac":"Fond du Lac","Forest":"Crandon","Grant":"Lancaster","Green":"Monroe",
+  "Green Lake":"Green Lake","Iowa":"Dodgeville","Iron":"Hurley","Jackson":"Black River Falls",
+  "Jefferson":"Jefferson","Juneau":"Mauston","Kenosha":"Kenosha","Kewaunee":"Kewaunee",
+  "La Crosse":"La Crosse","Lafayette":"Darlington","Langlade":"Antigo","Lincoln":"Merrill",
+  "Manitowoc":"Manitowoc","Marathon":"Wausau","Marinette":"Marinette","Marquette":"Montello",
+  "Menominee":"Keshena","Milwaukee":"Milwaukee","Monroe":"Sparta","Oconto":"Oconto",
+  "Oneida":"Rhinelander","Outagamie":"Appleton","Ozaukee":"Port Washington","Pepin":"Durand",
+  "Pierce":"Ellsworth","Polk":"Balsam Lake","Portage":"Stevens Point","Price":"Phillips",
+  "Racine":"Racine","Richland":"Richland Center","Rock":"Janesville","Rusk":"Ladysmith",
+  "St. Croix":"Hudson","Sauk":"Baraboo","Sawyer":"Hayward","Shawano":"Shawano",
+  "Sheboygan":"Sheboygan","Taylor":"Medford","Trempealeau":"Whitehall","Vernon":"Viroqua",
+  "Vilas":"Eagle River","Walworth":"Elkhorn","Washburn":"Shell Lake","Washington":"West Bend",
+  "Waukesha":"Waukesha","Waupaca":"Waupaca","Waushara":"Wautoma","Winnebago":"Oshkosh",
+  "Wood":"Wisconsin Rapids"
+};
+
+function clr(p){
+  if(p>500000)return"#1E2A1F";
+  if(p>200000)return"#2E3D28";
+  if(p>100000)return"#4A5C3A";
+  if(p>50000) return"#6B7A52";
+  if(p>25000) return"#8E9870";
+  if(p>10000) return"#B0B48A";
+  return"#CEC9A0";
+}
+function stk(p){
+  if(p>500000)return"#111811";
+  if(p>200000)return"#1E2A1F";
+  if(p>100000)return"#2E3D28";
+  if(p>50000) return"#4A5C3A";
+  if(p>25000) return"#6B7A52";
+  return"#8E9870";
+}
+
+const NS='http://www.w3.org/2000/svg';
+const cg=document.getElementById('cg');
+const lg=document.getElementById('lg');
+const pop=document.getElementById('pop');
+const pnm=document.getElementById('pnm');
+const ppn=document.getElementById('ppn');
+const pem=document.getElementById('pem');
+const pseat=document.getElementById('pseat');
+let act=null;
+
+// Render all county paths
+Object.entries(PATHS).forEach(([name,d])=>{
+  const data=D[name]; if(!data)return;
+  const path=document.createElementNS(NS,'path');
+  path.setAttribute('d',d);
+  path.setAttribute('class','cty');
+  path.setAttribute('fill',clr(data.p));
+  path.setAttribute('stroke',stk(data.p));
+  path.setAttribute('stroke-width','0.45');
+  path.setAttribute('stroke-linejoin','round');
+  cg.appendChild(path);
+  path.addEventListener('mouseenter',e=>show(e,name,data));
+  path.addEventListener('mousemove', e=>mv(e));
+  path.addEventListener('mouseleave',hide);
+  path.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];show(t,name,data);},{ passive:false });
+  path.addEventListener('touchmove', e=>{e.preventDefault();const t=e.touches[0];mv(t);},{ passive:false });
+  path.addEventListener('touchend', ()=>setTimeout(hide,2200));
+});
+
+
+
+const fmt=n=>n.toLocaleString();
+
+function show(e,name,data){
+  pnm.textContent=name+' County';
+  pseat.textContent='County Seat · '+(SEATS[name]||'');
+  ppn.textContent=fmt(data.p);
+  const mx=data.e[0][1];
+  pem.innerHTML=data.e.map((em,i)=>`<div class="er">
+    <div class="erk">${i+1}</div>
+    <div class="ei">
+      <div class="en">${em[0]}</div>
+      <div class="ebb"><div class="eb" style="width:${Math.round(em[1]/mx*100)}%"></div></div>
+    </div>
+    <div class="ec">${fmt(em[1])}</div>
+  </div>`).join('');
+  pop.classList.add('on'); mv(e);
+  if(act)act.classList.remove('hi');
+  act=e.target; act.classList.add('hi');
+}
+function mv(e){
+  const w=pop.offsetWidth||272,h=pop.offsetHeight||228;
+  let x=e.clientX+15,y=e.clientY-h/2;
+  if(x+w>window.innerWidth-5) x=e.clientX-w-15;
+  if(y<5) y=5;
+  if(y+h>window.innerHeight-5) y=window.innerHeight-h-5;
+  pop.style.left=x+'px'; pop.style.top=y+'px';
+}
+function hide(){
+  pop.classList.remove('on');
+  if(act){act.classList.remove('hi');act=null;}
+}
+</script>
+</body>
+</html>
